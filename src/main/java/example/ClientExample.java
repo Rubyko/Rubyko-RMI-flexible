@@ -6,7 +6,7 @@ public class ClientExample {
  
 	public static void main(String[] args) {
 		// lookup the service with name "example", interface ServiceExample located at host localhost and port 6789
-		ServiceExample example = RmiClient.lookupService("localhost", 6789, "example", ServiceExample.class);
+		final ServiceExample example = RmiClient.lookupService("localhost", 6789, "example", ServiceExample.class);
 		// call the method concat and display the result
 		for (int i = 0; i < 2000; i++) {
 			final int y = i;
