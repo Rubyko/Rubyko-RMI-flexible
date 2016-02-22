@@ -13,6 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.rubyko.rmi.protocol.Protocol;
+import com.rubyko.rmi.protocol.tcp.TcpServerProtocol;
+
 public class RmiServer extends Thread {
 
 	private final ExecutorService executorService = Executors
@@ -21,25 +24,24 @@ public class RmiServer extends Thread {
 	private final Map<String, Object> serviceNameToImpl = new ConcurrentHashMap<>();
 
 	private final int serverPort;
-	private ServerSocket serverSocket = null;
+	private Protocol protocol = null;
 	
 	public RmiServer(int serverPort) {
-		super();
 		this.serverPort = serverPort;
 	}
 	
 	@Override
 	public void run() {
 		try {
-			serverSocket = new ServerSocket(RmiServer.this.serverPort);
+			protocol = new TcpServerProtocol(serverPort);
 		} catch (Exception e) {
 			throw new RmiException(e);
 		}
 
 		while (!Thread.interrupted()) {
 			try {
-				Socket clientSocket = serverSocket.accept();
-				executorService.submit(new RpcHandler(clientSocket));
+				final Protocol clientProtocol = protocol.accept();
+				executorService.submit(new RpcHandler(clientProtocol));
 			} catch (Exception e) {
 				throw new RmiException(e);
 			}
@@ -60,36 +62,36 @@ public class RmiServer extends Thread {
 
 	private class RpcHandler implements Runnable {
 
-		private Socket clientSocket = null;
+		private Protocol clientProtocol = null;
 
-		public RpcHandler(Socket clientSocket) {
-			this.clientSocket = clientSocket;
+		public RpcHandler(Protocol clientProtocol) {
+			this.clientProtocol = clientProtocol;
 		}
 
 		@Override
 		public void run() {
-			tryReadWriteObjects(clientSocket);
+			tryReadWriteObjects(clientProtocol);
 		}
 	}
 
-	private void tryReadWriteObjects(Socket clientSocket) {
+	private void tryReadWriteObjects(Protocol clientProtocol) {
 		try {
-			RmiRequest remoteRequest = readRequestObject(clientSocket);
+			RmiRequest remoteRequest = readRequestObject(clientProtocol);
 			RmiResponse remoteResponse = handleMethodCall(remoteRequest);
-			writeResponseObject(clientSocket, remoteResponse);
+			writeResponseObject(clientProtocol, remoteResponse);
 		} catch (Exception e) {
 			throw new RmiException(e);
 		}
 	}
 
-	private void writeResponseObject(Socket clientSocket, RmiResponse remoteResponse) throws IOException {
-		ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+	private void writeResponseObject(Protocol clientProtocol, RmiResponse remoteResponse) throws IOException {
+		final ObjectOutputStream oos = new ObjectOutputStream(clientProtocol.getOutputStream());
 		oos.writeObject(remoteResponse);
 		oos.flush();
 	}
 
-	private RmiRequest readRequestObject(Socket clientSocket) throws IOException, ClassNotFoundException {
-		ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
+	private RmiRequest readRequestObject(Protocol clientSocket) throws IOException, ClassNotFoundException {
+		final ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
 		RmiRequest remoteRequest = (RmiRequest) ois.readObject();
 		return remoteRequest;
 	}

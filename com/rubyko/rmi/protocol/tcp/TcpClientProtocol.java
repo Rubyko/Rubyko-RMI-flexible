@@ -14,6 +14,10 @@ public class TcpClientProtocol implements Protocol {
 	public TcpClientProtocol(String host, int port) throws UnknownHostException, IOException {
 		this.socket = new Socket(host, port);
 	}
+	
+	public TcpClientProtocol(Socket socket){
+		this.socket = socket;
+	}
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
@@ -38,6 +42,12 @@ public class TcpClientProtocol implements Protocol {
 	@Override
 	public void close() throws IOException {
 		socket.close();
+	}
+
+	@Override
+	public Protocol accept() {
+		System.out.println("DO NOTHING");
+		return null;
 	}
 
 }

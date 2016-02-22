@@ -15,6 +15,8 @@ public interface Protocol {
 	public abstract void shutdownInput() throws IOException;
 	
 	public abstract void close() throws IOException;
+	
+	public abstract Protocol accept() throws IOException;
 
 }
 
