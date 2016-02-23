@@ -8,9 +8,9 @@ public class RmiResponse implements Serializable {
 
 	private final Object returnValue;
 
-	private final Exception exception;
+	private final Throwable exception;
 
-	public RmiResponse(Object returnValue, Exception exception) {
+	public RmiResponse(Object returnValue, Throwable exception) {
 		this.returnValue = returnValue;
 		this.exception = exception;
 	}
@@ -23,7 +23,7 @@ public class RmiResponse implements Serializable {
 		return exception == null;
 	}
 
-	public Exception getException() {
+	public Throwable getException() {
 		return exception;
 	}
 

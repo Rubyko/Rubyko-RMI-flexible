@@ -1,3 +1,4 @@
+package com.rubyko.rmi;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -8,7 +9,11 @@ import static org.junit.Assert.*;
  * @author yegor, @date 2/23/16 5:46 AM
  */
 public class LibraryTest {
+	
+	
 	@Test
 	public void testSomeLibraryMethod() {
     }
+	
+	
 }

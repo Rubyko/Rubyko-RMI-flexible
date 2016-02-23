@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -20,16 +18,16 @@ public class RmiServer extends Thread {
 
 	private final ExecutorService executorService = Executors
 			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	
+
 	private final Map<String, Object> serviceNameToImpl = new ConcurrentHashMap<>();
 
 	private final int serverPort;
 	private Protocol protocol = null;
-	
+
 	public RmiServer(int serverPort) {
 		this.serverPort = serverPort;
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -117,16 +115,16 @@ public class RmiServer extends Thread {
 
 		Object[] args = remoteRequest.getArgs();
 		Object returnValue = null;
-		Exception exception = null;
+		Throwable exception = null;
 		try {
 			if (!method.isAccessible()) {
 				method.setAccessible(true);
 			}
 			returnValue = method.invoke(serviceImpl, args);
-		} catch (Exception e) {
-			exception = e;
+		} catch (Throwable e) {
+			// Throw the cause !
+			exception = e.getCause();
 		}
-
 		return new RmiResponse(returnValue, exception);
 	}
 

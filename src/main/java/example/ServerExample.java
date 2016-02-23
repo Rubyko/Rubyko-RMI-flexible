@@ -13,7 +13,6 @@ public class ServerExample {
 		rpcServer.registerService("example2", new ServiceExampleImpl2());
 		// start the server at port 6789
 		rpcServer.start();
-
 	}
 
 }
