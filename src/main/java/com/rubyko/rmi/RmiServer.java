@@ -16,8 +16,7 @@ import com.rubyko.rmi.protocol.tcp.TcpServerProtocol;
 
 public class RmiServer extends Thread {
 
-	private final ExecutorService executorService = Executors
-			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	private final ExecutorService executorService = Executors.newCachedThreadPool();
 
 	private final Map<String, Object> serviceNameToImpl = new ConcurrentHashMap<>();
 
@@ -39,8 +38,8 @@ public class RmiServer extends Thread {
 		while (!Thread.interrupted()) {
 			try {
 				final Protocol clientProtocol = protocol.accept();
-				executorService.submit(new RpcHandler(clientProtocol));
-			} catch (Exception e) {
+				executorService.execute(new RpcHandler(clientProtocol));
+			} catch (IOException e) {
 				throw new RmiException(e);
 			}
 		}
@@ -70,15 +69,20 @@ public class RmiServer extends Thread {
 		public void run() {
 			tryReadWriteObjects(clientProtocol);
 		}
-	}
 
-	private void tryReadWriteObjects(Protocol clientProtocol) {
-		try {
-			RmiRequest remoteRequest = readRequestObject(clientProtocol);
-			RmiResponse remoteResponse = handleMethodCall(remoteRequest);
-			writeResponseObject(clientProtocol, remoteResponse);
-		} catch (Exception e) {
-			throw new RmiException(e);
+		private void tryReadWriteObjects(Protocol clientProtocol) {
+			try {
+				RmiRequest remoteRequest = readRequestObject(clientProtocol);
+				RmiResponse remoteResponse = handleMethodCall(remoteRequest);
+				writeResponseObject(clientProtocol, remoteResponse);
+			} catch (Exception e) {
+				try {
+					clientProtocol.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				throw new RmiException(e);
+			}
 		}
 	}
 

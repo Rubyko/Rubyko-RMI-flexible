@@ -42,7 +42,8 @@ public class TcpServerProtocol implements Protocol {
 
 	@Override
 	public Protocol accept() throws IOException {
-		return new TcpClientProtocol(serverSocket.accept());
+		TcpClientProtocol tcpClientProtocol = new TcpClientProtocol(serverSocket.accept());
+		return tcpClientProtocol;
 	}
 
 }
